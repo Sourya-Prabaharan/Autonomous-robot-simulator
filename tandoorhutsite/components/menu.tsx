@@ -1,254 +1,451 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 
+/**
+ * Menu Categories Data Structure - Updated with Real Tandoor Hut Menu
+ * - Exact items and pricing from the restaurant's actual menu
+ * - Organized by categories as shown in the menu images
+ * - Includes authentic Indian dish names and descriptions
+ * - Pricing matches the restaurant's current rates
+ */
 const menuCategories = [
   {
-    title: "Appetizers",
+    title: "Appetizers - Vegetarian",
     items: [
       {
-        name: "Medu Vada",
-        description: "Crispy lentil donuts served with sambar and coconut chutney",
-        price: "$8",
-        spice: "mild",
-      },
-      {
-        name: "Vegetable Pakora",
-        description: "Assorted vegetables dipped in spiced chickpea batter and fried",
-        price: "$10",
+        name: "Chilli Paneer",
+        description: "Cottage cheese cubes tossed in spicy Indo-Chinese sauce",
+        price: "$12.00",
         spice: "medium",
       },
       {
-        name: "Samosa Chaat",
-        description: "Crushed samosas topped with yogurt, chutneys, and spices",
-        price: "$12",
+        name: "Baby Corn Manchurian",
+        description: "Crispy baby corn in tangy Manchurian sauce",
+        price: "$12.00",
         spice: "medium",
       },
       {
-        name: "Idli Sambar",
-        description: "Steamed rice cakes served with lentil curry and coconut chutney",
-        price: "$9",
+        name: "Gobi Manchurian",
+        description: "Cauliflower florets in spicy Manchurian gravy",
+        price: "$12.00",
+        spice: "medium",
+      },
+      {
+        name: "Gobi 65",
+        description: "Spiced and fried cauliflower with curry leaves",
+        price: "$12.00",
+        spice: "hot",
+      },
+      {
+        name: "Paneer Pakoda",
+        description: "Cottage cheese fritters with mint chutney",
+        price: "$12.00",
         spice: "mild",
+      },
+      {
+        name: "Veg Samosa",
+        description: "Crispy pastry filled with spiced vegetables",
+        price: "$1.75",
+        spice: "mild",
+      },
+      {
+        name: "Aloo Bonda",
+        description: "Deep-fried potato dumplings with chutneys",
+        price: "$1.75",
+        spice: "mild",
+      },
+      {
+        name: "Mysore Bonda",
+        description: "Spicy lentil fritters from Mysore",
+        price: "$1.75",
+        spice: "medium",
+      },
+      {
+        name: "Masala Vada",
+        description: "Spiced lentil donuts with sambar",
+        price: "$1.75",
+        spice: "medium",
+      },
+      {
+        name: "Medhu Vada",
+        description: "Traditional South Indian lentil donuts",
+        price: "$1.75",
+        spice: "mild",
+      },
+    ],
+  },
+  {
+    title: "Appetizers - Non Vegetarian",
+    items: [
+      {
+        name: "Chicken Samosa",
+        description: "Crispy pastry filled with spiced chicken",
+        price: "$2.00",
+        spice: "medium",
       },
       {
         name: "Chicken 65",
-        description: "Spicy deep-fried chicken marinated in yogurt and spices",
-        price: "$14",
+        description: "Spicy deep-fried chicken with curry leaves",
+        price: "$13.00",
         spice: "hot",
       },
       {
-        name: "Paneer Tikka",
-        description: "Grilled cottage cheese cubes marinated in tandoor spices",
-        price: "$13",
+        name: "Chilli Chicken",
+        description: "Chicken pieces in spicy Indo-Chinese sauce",
+        price: "$13.00",
+        spice: "hot",
+      },
+      {
+        name: "Chilli Fish",
+        description: "Fish fillets in tangy chilli sauce",
+        price: "$15.00",
+        spice: "hot",
+      },
+      {
+        name: "Tilapia Fish Fry",
+        description: "Marinated and fried tilapia with spices",
+        price: "$11.00",
         spice: "medium",
       },
     ],
   },
   {
-    title: "Dosas & Crepes",
+    title: "Tiffin Specials",
     items: [
       {
-        name: "Plain Dosa",
-        description: "Traditional crispy rice crepe served with sambar and chutneys",
-        price: "$10",
+        name: "Idli - 3 piece",
+        description: "Steamed rice cakes with sambar and chutney",
+        price: "$6.50",
         spice: "mild",
       },
-      { name: "Masala Dosa", description: "Rice crepe filled with spiced potato curry", price: "$12", spice: "medium" },
       {
-        name: "Paper Dosa",
-        description: "Extra crispy and thin rice crepe, our signature dish",
-        price: "$14",
+        name: "Sambar Idli",
+        description: "Idli soaked in flavorful sambar",
+        price: "$6.50",
         spice: "mild",
+      },
+      {
+        name: "Plain Dosa",
+        description: "Traditional crispy rice crepe",
+        price: "$7.00",
+        spice: "mild",
+      },
+      {
+        name: "Masala Dosa",
+        description: "Rice crepe filled with spiced potato",
+        price: "$8.50",
+        spice: "medium",
+      },
+      {
+        name: "Podi Dosa",
+        description: "Dosa with spicy lentil powder",
+        price: "$8.50",
+        spice: "hot",
       },
       {
         name: "Mysore Masala Dosa",
-        description: "Spicy red chutney spread with potato filling",
-        price: "$13",
+        description: "Spicy red chutney dosa with potato filling",
+        price: "$9.00",
         spice: "hot",
       },
       {
-        name: "Rava Dosa",
-        description: "Semolina crepe with onions, chilies, and coriander",
-        price: "$11",
+        name: "Ghee Roast Dosa",
+        description: "Crispy dosa roasted in pure ghee",
+        price: "$13.00",
+        spice: "mild",
+      },
+      {
+        name: "Uthapam",
+        description: "Thick rice pancake with vegetables",
+        price: "$8.50",
+        spice: "medium",
+      },
+    ],
+  },
+  {
+    title: "Rice Specials",
+    items: [
+      {
+        name: "Chicken Biryani",
+        description: "Fragrant basmati rice with spiced chicken",
+        price: "$12.00",
         spice: "medium",
       },
       {
-        name: "Cheese Dosa",
-        description: "Rice crepe filled with melted cheese and spices",
-        price: "$13",
+        name: "Chicken Fried Rice",
+        description: "Wok-fried rice with chicken and vegetables",
+        price: "$12.00",
+        spice: "medium",
+      },
+      {
+        name: "Veg Biryani",
+        description: "Aromatic rice with mixed vegetables",
+        price: "$10.00",
+        spice: "mild",
+      },
+      {
+        name: "Veg Fried Rice",
+        description: "Stir-fried rice with fresh vegetables",
+        price: "$11.00",
+        spice: "mild",
+      },
+      {
+        name: "Egg Biryani",
+        description: "Spiced rice with boiled eggs",
+        price: "$12.00",
+        spice: "medium",
+      },
+      {
+        name: "Hakka Noodles Veg",
+        description: "Indo-Chinese style vegetable noodles",
+        price: "$12.00",
+        spice: "medium",
+      },
+      {
+        name: "Hakka Noodles - Chicken",
+        description: "Stir-fried noodles with chicken",
+        price: "$13.00",
+        spice: "medium",
+      },
+    ],
+  },
+  {
+    title: "Entree Specials - Vegetarian",
+    items: [
+      {
+        name: "Paneer Butter Masala",
+        description: "Cottage cheese in rich tomato cream sauce",
+        price: "$10.00",
+        spice: "mild",
+      },
+      {
+        name: "Palak Paneer",
+        description: "Cottage cheese in creamy spinach gravy",
+        price: "$10.00",
+        spice: "mild",
+      },
+      {
+        name: "Punjabi Kadhi",
+        description: "Yogurt-based curry with pakoras",
+        price: "$9.00",
+        spice: "mild",
+      },
+      {
+        name: "Dal Makhani",
+        description: "Creamy black lentils with butter",
+        price: "$9.00",
+        spice: "mild",
+      },
+      {
+        name: "Dal Tadka",
+        description: "Yellow lentils with aromatic tempering",
+        price: "$9.00",
         spice: "mild",
       },
     ],
   },
   {
-    title: "Curries & Main Dishes",
+    title: "Entree Specials - Non Vegetarian",
     items: [
       {
-        name: "Chettinad Chicken",
-        description: "Spicy chicken curry with black pepper, fennel, and curry leaves",
-        price: "$18",
+        name: "Goat Roast",
+        description: "Tender roasted goat with South Indian spices",
+        price: "$15.00",
         spice: "hot",
       },
       {
-        name: "Kerala Fish Curry",
-        description: "Fish simmered in coconut milk with tamarind and spices",
-        price: "$20",
-        spice: "medium",
-      },
-      {
-        name: "Mutton Curry",
-        description: "Tender goat meat cooked in aromatic South Indian spices",
-        price: "$22",
+        name: "Goat Curry",
+        description: "Traditional goat curry with aromatic spices",
+        price: "$15.00",
         spice: "hot",
       },
       {
-        name: "Vegetable Aviyal",
-        description: "Mixed vegetables in coconut and yogurt sauce",
-        price: "$16",
-        spice: "mild",
+        name: "Goat Chilli Masala",
+        description: "Spicy goat curry with green chilies",
+        price: "$15.00",
+        spice: "hot",
       },
       {
-        name: "Sambar",
-        description: "Traditional lentil curry with vegetables and tamarind",
-        price: "$14",
-        spice: "medium",
-      },
-      { name: "Rasam", description: "Tangy tomato and tamarind soup with spices", price: "$12", spice: "medium" },
-    ],
-  },
-  {
-    title: "Biryanis & Rice",
-    items: [
-      {
-        name: "Hyderabadi Chicken Biryani",
-        description: "Fragrant basmati rice with chicken, saffron, and fried onions",
-        price: "$19",
+        name: "Shrimp Masala",
+        description: "Prawns in spicy onion tomato gravy",
+        price: "$15.00",
         spice: "medium",
       },
       {
-        name: "Mutton Biryani",
-        description: "Aromatic rice with tender mutton and traditional spices",
-        price: "$23",
+        name: "Lamb Keema",
+        description: "Minced lamb with peas and spices",
+        price: "$16.00",
         spice: "medium",
       },
       {
-        name: "Vegetable Biryani",
-        description: "Basmati rice with mixed vegetables and aromatic spices",
-        price: "$17",
+        name: "Chicken Roast",
+        description: "Dry roasted chicken with curry leaves",
+        price: "$14.00",
+        spice: "medium",
+      },
+      {
+        name: "Butter Chicken",
+        description: "Chicken in rich tomato butter sauce",
+        price: "$11.00",
         spice: "mild",
       },
       {
-        name: "Lemon Rice",
-        description: "Tangy rice with curry leaves, mustard seeds, and peanuts",
-        price: "$12",
-        spice: "mild",
-      },
-      {
-        name: "Curd Rice",
-        description: "Cooling yogurt rice with mustard seeds and curry leaves",
-        price: "$10",
-        spice: "mild",
-      },
-      {
-        name: "Coconut Rice",
-        description: "Fragrant rice cooked with fresh coconut and spices",
-        price: "$13",
-        spice: "mild",
+        name: "Egg Curry",
+        description: "Boiled eggs in spicy onion gravy",
+        price: "$9.00",
+        spice: "medium",
       },
     ],
   },
   {
-    title: "Breads & Sides",
+    title: "Breads & Tandoori",
     items: [
       {
-        name: "Uthappam",
-        description: "Thick rice pancake topped with onions, tomatoes, and chilies",
-        price: "$11",
-        spice: "medium",
-      },
-      {
-        name: "Appam",
-        description: "Fermented rice pancake with crispy edges and soft center",
-        price: "$9",
-        spice: "mild",
+        name: "Butter Naan",
+        description: "Soft bread with butter from tandoor",
+        price: "$3.50",
+        spice: "none",
       },
       {
         name: "Garlic Naan",
-        description: "Soft bread with garlic and butter from our tandoor",
-        price: "$4",
-        spice: "mild",
-      },
-      { name: "Parotta", description: "Flaky layered bread served with curry", price: "$5", spice: "mild" },
-      {
-        name: "Coconut Chutney",
-        description: "Fresh coconut ground with green chilies and ginger",
-        price: "$3",
+        description: "Naan bread with garlic and herbs",
+        price: "$4.00",
         spice: "mild",
       },
       {
-        name: "Pickle Assortment",
-        description: "Traditional South Indian pickles - mango, lime, and mixed vegetable",
-        price: "$4",
-        spice: "hot",
+        name: "Tandoori Chicken",
+        description: "Marinated chicken cooked in tandoor",
+        price: "$4.50",
+        spice: "medium",
+      },
+      {
+        name: "Chicken Tikka",
+        description: "Boneless chicken pieces from tandoor",
+        price: "$13.00",
+        spice: "medium",
+      },
+      {
+        name: "Paneer Tikka",
+        description: "Marinated cottage cheese from tandoor",
+        price: "$13.00",
+        spice: "medium",
+      },
+      {
+        name: "Rumali Roti",
+        description: "Thin handkerchief bread",
+        price: "$4.50",
+        spice: "none",
       },
     ],
   },
   {
-    title: "Desserts & Beverages",
+    title: "Chaat Specials",
     items: [
       {
-        name: "Mysore Pak",
-        description: "Traditional sweet made with gram flour, ghee, and sugar",
-        price: "$6",
+        name: "Samosa Chaat",
+        description: "Crushed samosa with yogurt and chutneys",
+        price: "$7.50",
+        spice: "medium",
+      },
+      {
+        name: "Papdi Chaat",
+        description: "Crispy wafers with yogurt and tamarind",
+        price: "$7.50",
+        spice: "medium",
+      },
+      {
+        name: "Bhel Puri",
+        description: "Puffed rice with tangy chutneys",
+        price: "$7.50",
+        spice: "medium",
+      },
+      {
+        name: "Peanut Chaat",
+        description: "Spiced peanuts with onions and lime",
+        price: "$7.50",
+        spice: "medium",
+      },
+      {
+        name: "Aloo Tikki Chaat",
+        description: "Potato patties with yogurt and chutneys",
+        price: "$7.50",
+        spice: "medium",
+      },
+    ],
+  },
+  {
+    title: "Beverages & Desserts",
+    items: [
+      {
+        name: "Masala Chai",
+        description: "Spiced Indian tea with milk",
+        price: "$2.00",
+        spice: "mild",
+      },
+      {
+        name: "Filter Coffee",
+        description: "South Indian style coffee",
+        price: "$2.00",
+        spice: "none",
+      },
+      {
+        name: "Mango Lassi",
+        description: "Yogurt drink with fresh mango",
+        price: "$4.00",
         spice: "none",
       },
       {
         name: "Gulab Jamun",
-        description: "Soft milk dumplings in rose-flavored sugar syrup",
-        price: "$7",
-        spice: "none",
-      },
-      { name: "Payasam", description: "Traditional rice pudding with cardamom and nuts", price: "$8", spice: "none" },
-      {
-        name: "Filter Coffee",
-        description: "Authentic South Indian coffee brewed with chicory",
-        price: "$4",
+        description: "Sweet milk dumplings in syrup",
+        price: "$1.00",
         spice: "none",
       },
       {
-        name: "Masala Chai",
-        description: "Spiced tea with cardamom, ginger, and cinnamon",
-        price: "$3",
-        spice: "mild",
+        name: "Carrot Halwa",
+        description: "Sweet carrot pudding with nuts",
+        price: "$3.00",
+        spice: "none",
       },
       {
-        name: "Fresh Lime Soda",
-        description: "Refreshing lime drink with mint and black salt",
-        price: "$4",
+        name: "Rasmalai",
+        description: "Cottage cheese dumplings in sweet milk",
+        price: "$1.50",
         spice: "none",
       },
     ],
   },
 ]
 
+/**
+ * Spice Level Icon Function
+ * - Converts text spice levels to visual emoji indicators
+ * - Provides quick visual reference for customers
+ * - Helps customers make informed choices based on heat preference
+ */
 const getSpiceIcon = (level: string) => {
   switch (level) {
     case "none":
-      return "🥛"
+      return "🥛" // Milk glass for no spice (cooling)
     case "mild":
-      return "🌶️"
+      return "🌶️" // Single pepper
     case "medium":
-      return "🌶️🌶️"
+      return "🌶️🌶️" // Double pepper
     case "hot":
-      return "🌶️🌶️🌶️"
+      return "🌶️🌶️🌶️" // Triple pepper
     default:
       return ""
   }
 }
 
+/**
+ * Menu Component - Complete menu display for homepage
+ * Updated with authentic Tandoor Hut menu items and pricing
+ */
 export function Menu() {
   return (
     <section className="py-20 bg-gray-50">
       <div className="max-w-7xl mx-auto px-4">
+        {/* Section header */}
         <div className="text-center mb-16">
           <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">Our Menu</h2>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
@@ -256,27 +453,37 @@ export function Menu() {
           </p>
         </div>
 
+        {/* Menu categories grid - responsive layout */}
         <div className="grid lg:grid-cols-3 gap-8">
+          {/* Map through menu categories */}
           {menuCategories.map((category, index) => (
             <Card key={index} className="h-fit">
-              <CardHeader className="bg-orange-600 text-white">
+              {/* Category header with brand colors */}
+              <CardHeader className="bg-red-600 text-white">
                 <CardTitle className="text-2xl text-center">{category.title}</CardTitle>
               </CardHeader>
+
+              {/* Category items list */}
               <CardContent className="p-6">
                 <div className="space-y-6">
+                  {/* Map through items in each category */}
                   {category.items.map((item, itemIndex) => (
                     <div key={itemIndex} className="border-b border-gray-200 pb-4 last:border-b-0">
+                      {/* Item header with name, spice level, and price */}
                       <div className="flex justify-between items-start mb-2">
                         <div className="flex-1">
                           <div className="flex items-center gap-2">
                             <h3 className="font-semibold text-gray-900">{item.name}</h3>
+                            {/* Spice level indicator */}
                             <span className="text-sm">{getSpiceIcon(item.spice)}</span>
                           </div>
                         </div>
-                        <Badge variant="outline" className="text-orange-600 border-orange-600">
+                        {/* Price badge */}
+                        <Badge variant="outline" className="text-red-600 border-red-600">
                           {item.price}
                         </Badge>
                       </div>
+                      {/* Item description */}
                       <p className="text-sm text-gray-600">{item.description}</p>
                     </div>
                   ))}
