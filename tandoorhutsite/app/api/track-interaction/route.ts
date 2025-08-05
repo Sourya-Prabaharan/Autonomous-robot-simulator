@@ -1,62 +1,41 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { insertInteraction } from "@/lib/database"
 
-/**
- * POST /api/track-interaction
- *
- * Tracks customer interactions like page views, cart additions, platform clicks
- * This helps us understand customer behavior and preferences
- */
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
 
-    // Validate interaction type
-    const validTypes = ["page_view", "add_to_cart", "platform_click", "phone_call"]
-    if (!body.type || !validTypes.includes(body.type)) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: "Invalid interaction type",
-        },
-        { status: 400 },
-      )
+    // Validate required fields
+    if (!body.interaction_type) {
+      return NextResponse.json({ success: false, error: "interaction_type is required" }, { status: 400 })
     }
 
-    // Get client IP and user agent
-    const userAgent = request.headers.get("user-agent") || ""
+    // Get client IP address
+    const forwarded = request.headers.get("x-forwarded-for")
+    const ip = forwarded ? forwarded.split(",")[0].trim() : request.headers.get("x-real-ip")
 
-    // Prefer X-Forwarded-For, fall back to request.ip.  Trim whitespace.
-    const forwardedFor = request.headers.get("x-forwarded-for")
-    let ipAddress = forwardedFor ? forwardedFor.split(",")[0].trim() : (request.ip ?? null)
+    // Ensure IP is valid or null (not empty string)
+    const validIp = ip && ip !== "" ? ip : null
 
-    // If ipAddress is an empty string, use null so Postgres inet accepts it
-    if (!ipAddress) ipAddress = null
-
-    // Track the interaction
-    await insertInteraction(body.type, {
-      sessionId: body.sessionId,
-      itemId: body.itemId,
-      itemName: body.itemName,
+    const interaction = {
+      type: body.interaction_type,
+      page: body.page_url,
+      item_id: body.item_id,
+      item_name: body.item_name,
       platform: body.platform,
-      pageUrl: body.pageUrl,
-      userAgent,
-      ipAddress, // ← now string | null, never "unknown"
-    })
+      session_id: body.session_id,
+      ip_address: validIp,
+    }
 
-    return NextResponse.json({
-      success: true,
-      message: "Interaction tracked successfully",
-      type: body.type,
-    })
+    const success = await insertInteraction(interaction)
+
+    if (success) {
+      return NextResponse.json({ success: true })
+    } else {
+      return NextResponse.json({ success: false, error: "Failed to track interaction" }, { status: 500 })
+    }
   } catch (error) {
-    console.error("API error tracking interaction:", error)
-    return NextResponse.json(
-      {
-        success: false,
-        error: "Failed to track interaction",
-      },
-      { status: 500 },
-    )
+    console.error("Error in track-interaction API:", error)
+    return NextResponse.json({ success: false, error: "Internal server error" }, { status: 500 })
   }
 }

@@ -1,130 +1,107 @@
 "use client"
 
 import { useState } from "react"
+import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Menu, X } from "lucide-react"
+import { CartButton } from "@/components/cart-button"
 
-/**
- * Navigation Component - Main site navigation header
- * Features:
- * - Fixed position header that stays at top during scroll
- * - Responsive design with mobile hamburger menu
- * - Desktop horizontal navigation
- * - Brand logo/name with ITC Avant Garde Gothic Bold style and red theme
- * - Call-to-action button for online ordering
- * - Semi-transparent background with backdrop blur
- */
 export function Navigation() {
-  // State to control mobile menu visibility
-  const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [isOpen, setIsOpen] = useState(false)
 
   return (
-    // Fixed header with backdrop blur and shadow
-    <header className="fixed w-full bg-white/90 backdrop-blur-sm z-50 shadow-sm">
+    <nav className="bg-white shadow-lg fixed w-full top-0 z-50">
       <div className="max-w-7xl mx-auto px-4">
-        <div className="flex items-center justify-between h-16">
-          {/* Brand/Logo section with ITC Avant Garde Gothic Bold styling */}
-          <div className="flex-shrink-0">
-            <a href="#" className="text-2xl font-avant-garde text-red-600 brand-name">
-              TANDOOR HUT
-            </a>
-          </div>
+        <div className="flex justify-between items-center h-16">
+          {/* Logo */}
+          <Link href="/" className="flex items-center">
+            <span className="text-2xl font-bold text-red-600">Tandoor Hut</span>
+          </Link>
 
-          {/* Desktop navigation menu - hidden on mobile */}
-          <nav className="hidden md:flex space-x-8">
-            <a href="/" className="text-gray-700 hover:text-red-600 transition-colors font-medium">
+          {/* Desktop Navigation */}
+          <div className="hidden md:flex items-center space-x-8">
+            <Link href="/" className="text-gray-700 hover:text-red-600 transition-colors">
               Home
-            </a>
-            <a href="/menu" className="text-gray-700 hover:text-red-600 transition-colors font-medium">
+            </Link>
+            <Link href="/menu" className="text-gray-700 hover:text-red-600 transition-colors">
               Menu
-            </a>
-            <a href="/about" className="text-gray-700 hover:text-red-600 transition-colors font-medium">
+            </Link>
+            <Link href="/about" className="text-gray-700 hover:text-red-600 transition-colors">
               About
-            </a>
-            <a href="/contact" className="text-gray-700 hover:text-red-600 transition-colors font-medium">
+            </Link>
+            <Link href="/contact" className="text-gray-700 hover:text-red-600 transition-colors">
               Contact
-            </a>
-            <a href="/catering" className="text-gray-700 hover:text-red-600 transition-colors font-medium">
+            </Link>
+            <Link href="/catering" className="text-gray-700 hover:text-red-600 transition-colors">
               Catering
-            </a>
-          </nav>
+            </Link>
 
-          {/* Desktop CTA button - hidden on mobile */}
-          <div className="hidden md:flex">
-            <Button
-              className="bg-red-600 hover:bg-red-700 font-medium"
-              onClick={() => (window.location.href = "/menu")}
-            >
-              Order Online
-            </Button>
+            {/* CTA Buttons */}
+            <div className="flex items-center space-x-3">
+              <Link href="/menu">
+                <Button className="bg-red-600 hover:bg-red-700 text-white">Order Online</Button>
+              </Link>
+              <CartButton />
+            </div>
           </div>
 
-          {/* Mobile menu toggle button - only visible on mobile */}
-          <div className="md:hidden">
-            <button
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="text-gray-700 hover:text-red-600 focus:outline-none"
-            >
-              {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+          {/* Mobile menu button */}
+          <div className="md:hidden flex items-center space-x-2">
+            <CartButton />
+            <button onClick={() => setIsOpen(!isOpen)} className="text-gray-700 hover:text-red-600 transition-colors">
+              {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
             </button>
           </div>
         </div>
-      </div>
 
-      {/* Mobile menu dropdown */}
-      {isMenuOpen && (
-        <div className="md:hidden bg-white shadow-lg">
-          <div className="px-2 pt-2 pb-3 space-y-1">
-            <a
-              href="/"
-              className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-red-600 hover:bg-red-50 rounded-md"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Home
-            </a>
-            <a
-              href="/menu"
-              className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-red-600 hover:bg-red-50 rounded-md"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Menu
-            </a>
-            <a
-              href="/about"
-              className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-red-600 hover:bg-red-50 rounded-md"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              About
-            </a>
-            <a
-              href="/contact"
-              className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-red-600 hover:bg-red-50 rounded-md"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Contact
-            </a>
-            <a
-              href="/catering"
-              className="block px-3 py-2 text-base font-medium text-gray-700 hover:text-red-600 hover:bg-red-50 rounded-md"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Catering
-            </a>
-
-            <div className="pt-2">
-              <Button
-                className="w-full bg-red-600 hover:bg-red-700 font-medium"
-                onClick={() => {
-                  setIsMenuOpen(false)
-                  window.location.href = "/menu"
-                }}
+        {/* Mobile Navigation */}
+        {isOpen && (
+          <div className="md:hidden">
+            <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-white border-t">
+              <Link
+                href="/"
+                className="block px-3 py-2 text-gray-700 hover:text-red-600 transition-colors"
+                onClick={() => setIsOpen(false)}
               >
-                Order Online
-              </Button>
+                Home
+              </Link>
+              <Link
+                href="/menu"
+                className="block px-3 py-2 text-gray-700 hover:text-red-600 transition-colors"
+                onClick={() => setIsOpen(false)}
+              >
+                Menu
+              </Link>
+              <Link
+                href="/about"
+                className="block px-3 py-2 text-gray-700 hover:text-red-600 transition-colors"
+                onClick={() => setIsOpen(false)}
+              >
+                About
+              </Link>
+              <Link
+                href="/contact"
+                className="block px-3 py-2 text-gray-700 hover:text-red-600 transition-colors"
+                onClick={() => setIsOpen(false)}
+              >
+                Contact
+              </Link>
+              <Link
+                href="/catering"
+                className="block px-3 py-2 text-gray-700 hover:text-red-600 transition-colors"
+                onClick={() => setIsOpen(false)}
+              >
+                Catering
+              </Link>
+              <div className="px-3 py-2">
+                <Link href="/menu" onClick={() => setIsOpen(false)}>
+                  <Button className="w-full bg-red-600 hover:bg-red-700 text-white">Order Online</Button>
+                </Link>
+              </div>
             </div>
           </div>
-        </div>
-      )}
-    </header>
+        )}
+      </div>
+    </nav>
   )
 }

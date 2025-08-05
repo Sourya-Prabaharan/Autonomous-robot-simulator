@@ -12,7 +12,7 @@ const dishes = [
   {
     name: "Masala Dosa",
     description: "Crispy rice crepe filled with spiced potato, served with sambar and coconut chutney",
-    price: "$14",
+    price: "$14",  
     image: "/placeholder.svg?height=300&width=400", // Placeholder image URL
     badge: "Chef's Special", // Special designation for marketing
   },
@@ -75,7 +75,7 @@ export function FeaturedDishes() {
                 {/* Placeholder image area with gradient background */}
                 <div className="w-full h-64 bg-gradient-to-br from-red-100 to-red-200 flex items-center justify-center">
                   {/* Food emoji as visual representation */}
-                  <div className="text-6xl">🍛</div>
+                  <div className="text-6xl">🍛</div> 
                 </div>
 
                 {/* Special designation badge positioned over image */}

@@ -1,75 +1,47 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { insertOrder, type OrderData } from "@/lib/database"
+import { insertOrder } from "@/lib/database"
 
-/**
- * POST /api/track-order
- *
- * Tracks customer orders when they're initiated through the cart system
- * This helps us understand what customers are ordering and through which platforms
- */
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
 
     // Validate required fields
-    if (!body.items || !Array.isArray(body.items) || body.items.length === 0) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: "No items in order",
-        },
-        { status: 400 },
-      )
+    if (!body.items || !body.platform) {
+      return NextResponse.json({ success: false, error: "items and platform are required" }, { status: 400 })
     }
 
-    if (!body.platform || !["ubereats", "doordash", "phone"].includes(body.platform)) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: "Invalid platform",
-        },
-        { status: 400 },
-      )
-    }
+    // Get client IP address
+    const forwarded = request.headers.get("x-forwarded-for")
+    const ip = forwarded ? forwarded.split(",")[0].trim() : request.headers.get("x-real-ip")
 
-    // Create order data object
-    const orderData: OrderData = {
-      items: body.items.map((item: any) => ({
-        id: item.id || `item-${Date.now()}`,
-        name: item.name,
-        price: Number.parseFloat(item.price),
-        quantity: Number.parseInt(item.quantity),
-        category: item.category || "Other",
-      })),
+    // Ensure IP is valid or null
+    const validIp = ip && ip !== "" ? ip : null
+
+    // Calculate total if not provided
+    const total = body.total || body.items.reduce((sum: number, item: any) => sum + item.price * item.quantity, 0)
+
+    const orderData = {
+      items: JSON.stringify(body.items),
       platform: body.platform,
       orderType: body.orderType || "delivery",
-      customerInfo: {
-        name: body.customerName,
-        email: body.customerEmail,
-        phone: body.customerPhone,
-      },
+      total: total,
+      sessionId: body.session_id,
+      ipAddress: validIp,
     }
 
-    // Insert order into database
     const orderId = await insertOrder(orderData)
 
-    console.log(`Order tracked: ${orderId} with ${orderData.items.length} items via ${orderData.platform}`)
-
-    return NextResponse.json({
-      success: true,
-      orderId,
-      message: "Order tracked successfully",
-      itemCount: orderData.items.length,
-      totalAmount: orderData.items.reduce((sum, item) => sum + item.price * item.quantity, 0),
-    })
+    if (orderId) {
+      return NextResponse.json({
+        success: true,
+        orderId: `TH-${orderId}`,
+        message: "Order tracked successfully",
+      })
+    } else {
+      return NextResponse.json({ success: false, error: "Failed to track order" }, { status: 500 })
+    }
   } catch (error) {
-    console.error("API error tracking order:", error)
-    return NextResponse.json(
-      {
-        success: false,
-        error: "Failed to track order",
-      },
-      { status: 500 },
-    )
+    console.error("Error in track-order API:", error)
+    return NextResponse.json({ success: false, error: "Internal server error" }, { status: 500 })
   }
 }

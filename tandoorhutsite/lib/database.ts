@@ -1,274 +1,176 @@
 import { neon } from "@neondatabase/serverless"
 
-// Initialize Neon database connection using your provided connection string
 const sql = neon(process.env.DATABASE_URL!)
 
-/**
- * Database utility functions for Tandoor Hut analytics
- *
- * Purpose:
- * - Provide clean interface for database operations
- * - Handle error logging and connection management
- * - Support analytics tracking and reporting
- */
+export interface CustomerInteraction {
+  type: string
+  page?: string
+  item_id?: string
+  item_name?: string
+  platform?: string
+  session_id?: string
+  ip_address?: string | null
+}
 
 export interface OrderData {
-  items: Array<{
-    id: string
-    name: string
-    price: number
-    quantity: number
-    category?: string
-  }>
-  platform: "ubereats" | "doordash" | "phone"
-  orderType: "delivery" | "pickup"
-  customerInfo?: {
-    name?: string
-    email?: string
-    phone?: string
-  }
+  items: string
+  platform: string
+  orderType: string
+  total: number
+  sessionId?: string
+  ipAddress?: string | null
 }
 
 /**
- * Insert a new order and its items into the database
+ * Insert customer interaction into database
  */
-export async function insertOrder(orderData: OrderData): Promise<string> {
+export async function insertInteraction(interaction: CustomerInteraction) {
   try {
-    const orderId = `TH-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
-    const totalAmount = orderData.items.reduce((sum, item) => sum + item.price * item.quantity, 0)
-
-    // Insert order
-    await sql`
-      INSERT INTO orders (
-        order_id, 
-        customer_name, 
-        customer_email, 
-        customer_phone, 
-        platform, 
-        order_type, 
-        total_amount,
-        status
-      )
-      VALUES (
-        ${orderId}, 
-        ${orderData.customerInfo?.name || null}, 
-        ${orderData.customerInfo?.email || null}, 
-        ${orderData.customerInfo?.phone || null}, 
-        ${orderData.platform}, 
-        ${orderData.orderType}, 
-        ${totalAmount},
-        'initiated'
-      )
-    `
-
-    // Insert order items
-    for (const item of orderData.items) {
-      const itemTotal = item.price * item.quantity
-      await sql`
-        INSERT INTO order_items (
-          order_id, 
-          item_id, 
-          item_name, 
-          category, 
-          price, 
-          quantity, 
-          item_total
-        )
-        VALUES (
-          ${orderId}, 
-          ${item.id}, 
-          ${item.name}, 
-          ${item.category || "Other"}, 
-          ${item.price}, 
-          ${item.quantity}, 
-          ${itemTotal}
-        )
-      `
+    // Validate required field
+    if (!interaction.type) {
+      throw new Error("interaction_type is required")
     }
 
-    console.log(`Order ${orderId} inserted successfully with ${orderData.items.length} items`)
-    return orderId
-  } catch (error) {
-    console.error("Database error inserting order:", error)
-    throw new Error("Failed to save order to database")
-  }
-}
-
-/**
- * Track customer interactions
- */
-export async function insertInteraction(
-  type: "page_view" | "add_to_cart" | "platform_click" | "phone_call",
-  data?: {
-    sessionId?: string
-    itemId?: string
-    itemName?: string
-    platform?: string
-    pageUrl?: string
-    userAgent?: string
-    ipAddress?: string | null
-  },
-) {
-  try {
-    await sql`
+    const result = await sql`
       INSERT INTO customer_interactions (
-        session_id,
         interaction_type, 
-        page_url,
+        page_url, 
         item_id, 
-        item_name,
-        platform,
-        user_agent,
-        ip_address
+        item_name, 
+        platform, 
+        session_id, 
+        ip_address,
+        created_at
       )
       VALUES (
-        ${data?.sessionId || null},
-        ${type}, 
-        ${data?.pageUrl || null},
-        ${data?.itemId || null}, 
-        ${data?.itemName || null},
-        ${data?.platform || null},
-        ${data?.userAgent || null},
-        ${data?.ipAddress || null}
+        ${interaction.type},
+        ${interaction.page || null},
+        ${interaction.item_id || null},
+        ${interaction.item_name || null},
+        ${interaction.platform || null},
+        ${interaction.session_id || null},
+        ${interaction.ip_address || null},
+        NOW()
       )
+      RETURNING id
     `
+
+    console.log(`Tracked interaction: ${interaction.type}`)
+    return result[0]?.id
   } catch (error) {
     console.error("Database error inserting interaction:", error)
-    // Don't throw error for analytics - shouldn't break user experience
+    throw error
   }
 }
 
 /**
- * Get analytics data for dashboard
+ * Insert order into database
  */
-export async function getAnalytics(days = 7) {
+export async function insertOrder(orderData: OrderData) {
   try {
-    const dateFilter = new Date()
-    dateFilter.setDate(dateFilter.getDate() - days)
-    const dateString = dateFilter.toISOString().split("T")[0]
+    const result = await sql`
+      INSERT INTO orders (
+        items,
+        platform,
+        order_type,
+        total_amount,
+        session_id,
+        ip_address,
+        created_at
+      )
+      VALUES (
+        ${orderData.items},
+        ${orderData.platform},
+        ${orderData.orderType},
+        ${orderData.total},
+        ${orderData.sessionId || null},
+        ${orderData.ipAddress || null},
+        NOW()
+      )
+      RETURNING id
+    `
 
-    // Get popular items
+    return result[0]?.id
+  } catch (error) {
+    console.error("Database error inserting order:", error)
+    throw error
+  }
+}
+
+/**
+ * Get analytics data
+ */
+export async function getAnalyticsData() {
+  try {
+    // Get interaction counts by type
+    const interactionCounts = await sql`
+      SELECT 
+        interaction_type,
+        COUNT(*) as count
+      FROM customer_interactions 
+      WHERE created_at >= NOW() - INTERVAL '30 days'
+      GROUP BY interaction_type
+      ORDER BY count DESC
+    `
+
+    // Get popular menu items
     const popularItems = await sql`
       SELECT 
-        item_id,
         item_name,
-        category,
-        total_orders,
-        total_quantity,
-        total_revenue,
-        last_ordered
-      FROM item_analytics
-      WHERE total_orders > 0
-      ORDER BY total_orders DESC, total_revenue DESC
+        COUNT(*) as add_to_cart_count
+      FROM customer_interactions 
+      WHERE interaction_type = 'add_to_cart' 
+        AND created_at >= NOW() - INTERVAL '30 days'
+        AND item_name IS NOT NULL
+      GROUP BY item_name
+      ORDER BY add_to_cart_count DESC
       LIMIT 10
     `
 
-    // Get platform analytics
-    const platformAnalytics = await sql`
+    // Get platform clicks
+    const platformClicks = await sql`
       SELECT 
         platform,
-        SUM(total_orders)::integer as total_orders,
-        SUM(total_revenue)::numeric as total_revenue,
-        AVG(total_revenue)::numeric as avg_daily_revenue
-      FROM platform_analytics
-      WHERE date >= ${dateString}
+        COUNT(*) as clicks
+      FROM customer_interactions 
+      WHERE interaction_type = 'platform_click' 
+        AND created_at >= NOW() - INTERVAL '30 days'
+        AND platform IS NOT NULL
       GROUP BY platform
-      ORDER BY total_orders DESC
+      ORDER BY clicks DESC
     `
 
-    // Get daily analytics
-    const dailyAnalytics = await sql`
+    // Get daily page views
+    const dailyPageViews = await sql`
       SELECT 
-        date,
-        SUM(total_orders)::integer as total_orders,
-        SUM(total_revenue)::numeric as total_revenue
-      FROM platform_analytics
-      WHERE date >= ${dateString}
-      GROUP BY date
+        DATE(created_at) as date,
+        COUNT(*) as views
+      FROM customer_interactions 
+      WHERE interaction_type = 'page_view' 
+        AND created_at >= NOW() - INTERVAL '7 days'
+      GROUP BY DATE(created_at)
       ORDER BY date DESC
     `
 
-    // Get interaction analytics
-    const interactions = await sql`
+    // Get order statistics
+    const orderStats = await sql`
       SELECT 
-        interaction_type,
-        DATE(created_at) as date,
-        COUNT(*)::integer as count
-      FROM customer_interactions
-      WHERE created_at >= ${dateString}
-      GROUP BY interaction_type, DATE(created_at)
-      ORDER BY date DESC, count DESC
-    `
-
-    // Get recent orders for overview
-    const recentOrders = await sql`
-      SELECT 
-        order_id,
-        platform,
-        total_amount,
-        created_at,
-        (SELECT COUNT(*) FROM order_items WHERE order_items.order_id = orders.order_id) as item_count
-      FROM orders
-      WHERE created_at >= ${dateString}
-      ORDER BY created_at DESC
-      LIMIT 20
+        COUNT(*) as total_orders,
+        AVG(total_amount) as average_order_value,
+        SUM(total_amount) as total_revenue
+      FROM orders 
+      WHERE created_at >= NOW() - INTERVAL '30 days'
     `
 
     return {
+      interactionCounts,
       popularItems,
-      platformAnalytics,
-      dailyAnalytics,
-      interactions,
-      recentOrders,
+      platformClicks,
+      dailyPageViews,
+      orderStats: orderStats[0] || { total_orders: 0, average_order_value: 0, total_revenue: 0 },
     }
   } catch (error) {
     console.error("Database error getting analytics:", error)
-    throw new Error("Failed to fetch analytics data")
-  }
-}
-
-/**
- * Get total statistics
- */
-export async function getTotalStats() {
-  try {
-    const stats = await sql`
-      SELECT 
-        (SELECT COUNT(*) FROM orders) as total_orders,
-        (SELECT SUM(total_amount) FROM orders) as total_revenue,
-        (SELECT COUNT(DISTINCT item_id) FROM order_items) as unique_items_ordered,
-        (SELECT COUNT(*) FROM customer_interactions) as total_interactions
-    `
-
-    return (
-      stats[0] || {
-        total_orders: 0,
-        total_revenue: 0,
-        unique_items_ordered: 0,
-        total_interactions: 0,
-      }
-    )
-  } catch (error) {
-    console.error("Database error getting total stats:", error)
-    return {
-      total_orders: 0,
-      total_revenue: 0,
-      unique_items_ordered: 0,
-      total_interactions: 0,
-    }
-  }
-}
-
-/**
- * Test database connection
- */
-export async function testConnection() {
-  try {
-    const result = await sql`SELECT NOW() as current_time`
-    console.log("Database connection successful:", result[0].current_time)
-    return true
-  } catch (error) {
-    console.error("Database connection failed:", error)
-    return false
+    throw error
   }
 }

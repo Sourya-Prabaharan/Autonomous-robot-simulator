@@ -1,99 +1,131 @@
+"use client"
+
+import Link from "next/link"
 import { Facebook, Instagram, Twitter } from "lucide-react"
 
-/**
- * Footer Component - Site-wide footer with additional information and links
- *
- * Purpose:
- * - Provide secondary navigation and information
- * - Include social media links for community building
- * - Display contact information for easy access
- * - Add credibility with professional presentation
- * - Improve SEO with additional internal links
- *
- * Content Strategy:
- * - Restaurant description reinforces brand message
- * - Quick links provide easy navigation
- * - Contact information repeated for convenience
- * - Social media links encourage engagement
- * - Copyright notice establishes legitimacy
- *
- * Design Features:
- * - Dark background for visual contrast
- * - Multi-column responsive layout
- * - Hover effects on interactive elements
- * - Consistent brand colors (orange accents)
- * - Clean typography hierarchy
- */
 export function Footer() {
+  const handlePhoneClick = () => {
+    window.open("tel:(630)820-3600")
+  }
+
+  const handleEmailClick = () => {
+    window.open("mailto:info@tandoorhut.com")
+  }
+
+  const handleAddressClick = () => {
+    window.open("https://maps.google.com/?q=Naperville,IL+60564", "_blank")
+  }
+
   return (
-    <footer className="bg-gray-900 text-white py-12">
-      <div className="max-w-7xl mx-auto px-4">
-        {/* Main footer content grid */}
+    <footer className="bg-gray-900 text-white">
+      <div className="max-w-7xl mx-auto px-4 py-12">
         <div className="grid md:grid-cols-4 gap-8">
-          {/* Brand section - takes up 2 columns on larger screens */}
-          <div className="col-span-2">
-            {/* Restaurant name with brand color */}
+          {/* Brand */}
+          <div>
             <h3 className="text-2xl font-bold text-red-400 mb-4">Tandoor Hut</h3>
-
-            {/* Restaurant description */}
-            <p className="text-gray-300 mb-4 max-w-md">
-              Authentic South Indian cuisine in beautiful Naperville, Illinois. Fresh ingredients, traditional recipes,
-              and warm hospitality.
+            <p className="text-gray-300 mb-4">
+              Authentic South Indian cuisine in the heart of Naperville. Experience traditional flavors with modern
+              convenience.
             </p>
-
-            {/* Social media links */}
             <div className="flex space-x-4">
-              {/* Facebook icon with hover effect */}
-              <Facebook className="h-6 w-6 text-gray-400 hover:text-red-400 cursor-pointer transition-colors" />
-              {/* Instagram icon with hover effect */}
-              <Instagram className="h-6 w-6 text-gray-400 hover:text-red-400 cursor-pointer transition-colors" />
-              {/* Twitter icon with hover effect */}
-              <Twitter className="h-6 w-6 text-gray-400 hover:text-red-400 cursor-pointer transition-colors" />
+              <a
+                href="https://facebook.com/tandoorhut"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-gray-400 hover:text-red-400 transition-colors"
+              >
+                <Facebook className="h-5 w-5" />
+              </a>
+              <a
+                href="https://instagram.com/tandoorhut"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-gray-400 hover:text-red-400 transition-colors"
+              >
+                <Instagram className="h-5 w-5" />
+              </a>
+              <a
+                href="https://twitter.com/tandoorhut"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-gray-400 hover:text-red-400 transition-colors"
+              >
+                <Twitter className="h-5 w-5" />
+              </a>
             </div>
           </div>
 
-          {/* Quick links section */}
+          {/* Quick Links */}
           <div>
             <h4 className="text-lg font-semibold mb-4">Quick Links</h4>
-            <ul className="space-y-2 text-gray-300">
+            <ul className="space-y-2">
               <li>
-                <a href="#" className="hover:text-red-400 transition-colors">
+                <Link href="/menu" className="text-gray-300 hover:text-red-400 transition-colors">
                   Menu
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#" className="hover:text-red-400 transition-colors">
-                  Order Online
-                </a>
-              </li>
-              <li>
-                <a href="#" className="hover:text-red-400 transition-colors">
+                <Link href="/catering" className="text-gray-300 hover:text-red-400 transition-colors">
                   Catering
-                </a>
+                </Link>
               </li>
               <li>
-                <a href="#" className="hover:text-red-400 transition-colors">
+                <Link href="/contact" className="text-gray-300 hover:text-red-400 transition-colors">
                   Contact
-                </a>
+                </Link>
+              </li>
+              <li>
+                <Link href="/about" className="text-gray-300 hover:text-red-400 transition-colors">
+                  About Us
+                </Link>
               </li>
             </ul>
           </div>
 
-          {/* Contact information section */}
+          {/* Contact Info */}
           <div>
-            <h4 className="text-lg font-semibold mb-4">Contact</h4>
+            <h4 className="text-lg font-semibold mb-4">Contact Info</h4>
+            <ul className="space-y-2">
+              <li>
+                <button
+                  onClick={handlePhoneClick}
+                  className="text-gray-300 hover:text-red-400 transition-colors text-left"
+                >
+                  (630) 820-3600
+                </button>
+              </li>
+              <li>
+                <button
+                  onClick={handleEmailClick}
+                  className="text-gray-300 hover:text-red-400 transition-colors text-left"
+                >
+                  info@tandoorhut.com
+                </button>
+              </li>
+              <li>
+                <button
+                  onClick={handleAddressClick}
+                  className="text-gray-300 hover:text-red-400 transition-colors text-left"
+                >
+                  Naperville, IL 60564
+                </button>
+              </li>
+            </ul>
+          </div>
+
+          {/* Hours */}
+          <div>
+            <h4 className="text-lg font-semibold mb-4">Hours</h4>
             <ul className="space-y-2 text-gray-300">
-              <li>Naperville, IL 60564</li>
-              <li>United States</li>
-              <li>(630) 848-8222</li>
-              <li>info@tandoorhut.com</li>
+              <li>Mon-Thu: 11AM-9:30PM</li>
+              <li>Fri-Sat: 11AM-10PM</li>
+              <li>Sun: 11AM-9:30PM</li>
             </ul>
           </div>
         </div>
 
-        {/* Copyright section with top border */}
-        <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
-          <p>&copy; 2024 Tandoor Hut Restaurant. All rights reserved.</p>
+        <div className="border-t border-gray-800 mt-8 pt-8 text-center">
+          <p className="text-gray-400">© 2024 Tandoor Hut. All rights reserved.</p>
         </div>
       </div>
     </footer>
