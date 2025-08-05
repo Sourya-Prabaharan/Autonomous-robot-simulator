@@ -1,272 +1,240 @@
 "use client"
 
 import { useState } from "react"
+import { X, Minus, Plus, ShoppingCart, Phone } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Plus, Minus, X, Smartphone, Phone } from "lucide-react"
+import { Badge } from "@/components/ui/badge"
 import { useCartStore } from "@/lib/cart-store"
+import { trackOrder, trackPlatformClick, trackPhoneCall } from "@/lib/analytics"
 
 /**
- * CartSidebar Props Interface
+ * CartSidebar Component - Shopping cart with order tracking
+ *
+ * Features:
+ * - Display cart items with quantities and prices
+ * - Update item quantities
+ * - Remove items from cart
+ * - Submit orders via UberEats, DoorDash, or Phone
+ * - Track all interactions in PostgreSQL database
  */
+
 interface CartSidebarProps {
   isOpen: boolean
   onClose: () => void
 }
 
-/**
- * Delivery Platform Options - Simplified
- */
-const deliveryOptions = [
-  {
-    name: "UberEats",
-    logo: "🚗",
-    description: "Order for delivery",
-    url: "https://www.ubereats.com/store/tandoor-hut/mChGPrbITXOG0PszzneUqg?srsltid=AfmBOoo1LyIE_I16LmWzbRi_P6TG0Zoxq786a8gWz4H2Bc-lcA3vdD9d",
-    backgroundColor: "bg-black",
-    textColor: "text-white",
-    buttonColor: "bg-green-600 hover:bg-green-700",
-  },
-  {
-    name: "DoorDash",
-    logo: "🏠",
-    description: "Order for delivery",
-    url: "https://www.doordash.com/store/tandoorhut-naperville-981534/1456703/?srsltid=AfmBOoplot9ZKL57MnCTUEiEY8nRfC2Ig1MLXE1k6XITr9vQk2zQetXf",
-    backgroundColor: "bg-red-600",
-    textColor: "text-white",
-    buttonColor: "bg-white hover:bg-gray-100 text-red-600",
-  },
-]
-
-/**
- * CartSidebar Component - Updated for delivery platform integration
- *
- * Purpose:
- * - Display cart items and total
- * - Provide options to order via UberEats or DoorDash
- * - Offer direct phone ordering as alternative
- * - Remove complex payment processing in favor of external platforms
- *
- * Features:
- * - Cart management (add/remove items, quantities)
- * - Delivery platform selection
- * - Direct links to external ordering platforms
- * - Phone ordering option for pickup
- * - Order summary and total calculation
- */
 export function CartSidebar({ isOpen, onClose }: CartSidebarProps) {
-  const { items, updateQuantity, getTotalPrice, clearCart } = useCartStore()
-  const [selectedPlatform, setSelectedPlatform] = useState<string | null>(null)
+  const { items, updateQuantity, removeItem, clearCart, getTotalPrice } = useCartStore()
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [orderStatus, setOrderStatus] = useState<string | null>(null)
 
   /**
-   * Handle ordering through delivery platform
-   * - Constructs order summary for external platform
-   * - Opens delivery platform in new tab
-   * - Provides order details for customer reference
+   * Handle order submission via different platforms
    */
-  const handleOrderThroughPlatform = (platform: any) => {
+  const handleOrderSubmission = async (platform: "ubereats" | "doordash" | "phone") => {
     if (items.length === 0) {
-      alert("Your cart is empty. Please add items before ordering.")
+      setOrderStatus("Please add items to your cart first")
       return
     }
 
-    // Create order summary for customer reference
-    const orderSummary = {
-      items: items.map((item) => ({
-        name: item.name,
-        quantity: item.quantity,
-        price: item.price,
-        total: item.price * item.quantity,
-      })),
-      subtotal: getTotalPrice(),
-      platform: platform.name,
-      timestamp: new Date().toISOString(),
-    }
+    setIsSubmitting(true)
+    setOrderStatus(null)
 
-    // Log order summary for customer reference
-    console.log("Order Summary for", platform.name, ":", orderSummary)
+    try {
+      // Track platform click
+      await trackPlatformClick(platform)
 
-    // Show order summary to customer
-    const itemsList = items
-      .map((item) => `${item.quantity}x ${item.name} - $${(item.price * item.quantity).toFixed(2)}`)
-      .join("\n")
+      // Prepare order data
+      const orderData = {
+        items: items.map((item) => ({
+          id: item.id,
+          name: item.name,
+          price: item.price,
+          quantity: item.quantity,
+        })),
+        platform,
+        orderType: "delivery" as const,
+      }
 
-    const confirmMessage = `Order Summary for ${platform.name}:\n\n${itemsList}\n\nSubtotal: $${getTotalPrice().toFixed(
-      2,
-    )}\n\nYou'll be redirected to ${platform.name} to complete your order. Continue?`
+      // Track the order in database
+      const orderId = await trackOrder(orderData)
 
-    if (confirm(confirmMessage)) {
-      // Open delivery platform
-      window.open(platform.url, "_blank", "noopener,noreferrer")
+      if (orderId) {
+        setOrderStatus(
+          `Order ${orderId} submitted successfully! ${
+            platform === "phone"
+              ? "We'll call you to confirm your order."
+              : `Redirecting to ${platform === "ubereats" ? "UberEats" : "DoorDash"}...`
+          }`,
+        )
 
-      // Optional: Clear cart after redirecting (uncomment if desired)
-      // setTimeout(() => {
-      //   clearCart()
-      //   onClose()
-      // }, 1000)
+        // Clear cart after successful order
+        setTimeout(() => {
+          clearCart()
+          setOrderStatus(null)
+          onClose()
+        }, 3000)
+
+        // Redirect to external platforms
+        if (platform === "ubereats") {
+          setTimeout(() => {
+            window.open("https://www.ubereats.com/store/tandoor-hut/4bWOBroxSdOABc_5dYVVJA", "_blank")
+          }, 1500)
+        } else if (platform === "doordash") {
+          setTimeout(() => {
+            window.open("https://www.doordash.com/store/tandoor-hut-naperville-1486077/", "_blank")
+          }, 1500)
+        }
+      } else {
+        setOrderStatus("Failed to submit order. Please try again.")
+      }
+    } catch (error) {
+      console.error("Error submitting order:", error)
+      setOrderStatus("Error submitting order. Please try again.")
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
   /**
-   * Handle phone ordering
-   * - Creates order summary for phone call
-   * - Initiates phone call to restaurant
-   * - Provides order details for phone conversation
+   * Handle phone call tracking
    */
-  const handlePhoneOrder = () => {
-    if (items.length === 0) {
-      alert("Your cart is empty. Please add items before calling.")
-      return
-    }
-
-    const itemsList = items
-      .map((item) => `${item.quantity}x ${item.name} - $${(item.price * item.quantity).toFixed(2)}`)
-      .join("\n")
-
-    const orderSummary = `Order Summary for Phone Call:\n\n${itemsList}\n\nSubtotal: $${getTotalPrice().toFixed(
-      2,
-    )}\n\nPlease have this information ready when you call (630) 820-3600`
-
-    alert(orderSummary)
-
-    // Initiate phone call
+  const handlePhoneCall = () => {
+    trackPhoneCall()
     window.location.href = "tel:(630)820-3600"
   }
 
-  // Don't render if sidebar is closed
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 z-50">
-      <div className="fixed right-0 top-0 h-full w-full max-w-md bg-white shadow-xl overflow-y-auto">
-        <div className="p-6">
-          {/* Header */}
-          <div className="flex justify-between items-center mb-6">
-            <h3 className="text-2xl font-bold">Your Order</h3>
-            <Button variant="outline" size="sm" onClick={onClose}>
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
+    <>
+      {/* Backdrop */}
+      <div className="fixed inset-0 bg-black bg-opacity-50 z-50" onClick={onClose} />
 
-          {/* Cart Content */}
+      {/* Sidebar */}
+      <div className="fixed right-0 top-0 h-full w-full max-w-md bg-white shadow-xl z-50 overflow-y-auto">
+        {/* Header */}
+        <div className="flex items-center justify-between p-4 border-b">
+          <div className="flex items-center gap-2">
+            <ShoppingCart className="h-5 w-5" />
+            <h2 className="text-lg font-semibold">Your Cart</h2>
+            {items.length > 0 && <Badge variant="secondary">{items.length}</Badge>}
+          </div>
+          <Button variant="ghost" size="sm" onClick={onClose}>
+            <X className="h-4 w-4" />
+          </Button>
+        </div>
+
+        {/* Cart Items */}
+        <div className="flex-1 p-4">
           {items.length === 0 ? (
             <div className="text-center py-8">
-              <p className="text-gray-600 mb-4">Your cart is empty</p>
-              <p className="text-sm text-gray-500">Add some delicious South Indian dishes to get started!</p>
+              <ShoppingCart className="h-12 w-12 mx-auto text-gray-400 mb-4" />
+              <p className="text-gray-500">Your cart is empty</p>
+              <p className="text-sm text-gray-400 mt-2">Add some delicious items to get started!</p>
             </div>
           ) : (
-            <>
-              {/* Cart Items */}
-              <div className="space-y-4 mb-6">
-                {items.map((item) => (
-                  <div key={item.id} className="flex justify-between items-center border-b pb-4">
-                    <div className="flex-1">
-                      <h4 className="font-medium text-gray-900">{item.name}</h4>
-                      <p className="text-sm text-gray-600">${item.price.toFixed(2)} each</p>
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                      <Button variant="outline" size="sm" onClick={() => updateQuantity(item.id, item.quantity - 1)}>
-                        <Minus className="h-3 w-3" />
-                      </Button>
-                      <span className="w-8 text-center font-medium">{item.quantity}</span>
-                      <Button variant="outline" size="sm" onClick={() => updateQuantity(item.id, item.quantity + 1)}>
-                        <Plus className="h-3 w-3" />
-                      </Button>
-                    </div>
+            <div className="space-y-4">
+              {items.map((item) => (
+                <div key={item.id} className="flex items-center gap-3 p-3 border rounded-lg">
+                  <div className="flex-1">
+                    <h3 className="font-medium text-sm">{item.name}</h3>
+                    <p className="text-red-600 font-semibold">${item.price.toFixed(2)}</p>
                   </div>
-                ))}
-              </div>
 
-              {/* Order Total */}
-              <div className="border-t pt-4 mb-6">
-                <div className="flex justify-between items-center">
-                  <span className="text-lg font-semibold">Subtotal:</span>
-                  <span className="text-2xl font-bold text-red-600">${getTotalPrice().toFixed(2)}</span>
-                </div>
-                <p className="text-xs text-gray-500 mt-1">
-                  *Delivery fees and taxes will be calculated on the delivery platform
-                </p>
-              </div>
-
-              {/* Delivery Platform Options */}
-              <div className="space-y-4 mb-6">
-                <h4 className="font-semibold text-gray-900">Choose Your Delivery Option:</h4>
-
-                {/* Delivery Platforms */}
-                {deliveryOptions.map((platform, index) => (
-                  <div
-                    key={index}
-                    className={`border rounded-lg p-4 cursor-pointer transition-all ${
-                      selectedPlatform === platform.name
-                        ? "border-red-500 bg-red-50"
-                        : "border-gray-200 hover:border-gray-300"
-                    }`}
-                    onClick={() => setSelectedPlatform(platform.name)}
-                  >
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center gap-3">
-                        <span className="text-2xl">{platform.logo}</span>
-                        <div>
-                          <h5 className="font-semibold">{platform.name}</h5>
-                          <p className="text-sm text-gray-600">{platform.description}</p>
-                        </div>
-                      </div>
-                    </div>
-
+                  <div className="flex items-center gap-2">
                     <Button
-                      onClick={() => handleOrderThroughPlatform(platform)}
-                      className={`w-full ${platform.buttonColor} font-medium`}
+                      variant="outline"
                       size="sm"
+                      onClick={() => updateQuantity(item.id, Math.max(0, item.quantity - 1))}
+                      disabled={item.quantity <= 1}
                     >
-                      <Smartphone className="h-4 w-4 mr-2" />
-                      Order on {platform.name}
+                      <Minus className="h-3 w-3" />
                     </Button>
-                  </div>
-                ))}
 
-                {/* Phone Ordering Option */}
-                <div className="border border-gray-200 rounded-lg p-4">
-                  <div className="flex items-center gap-3 mb-2">
-                    <span className="text-2xl">📞</span>
-                    <div>
-                      <h5 className="font-semibold">Call for Pickup</h5>
-                      <p className="text-sm text-gray-600">No delivery fees • Ready in 15-20 min</p>
-                    </div>
+                    <span className="w-8 text-center text-sm font-medium">{item.quantity}</span>
+
+                    <Button variant="outline" size="sm" onClick={() => updateQuantity(item.id, item.quantity + 1)}>
+                      <Plus className="h-3 w-3" />
+                    </Button>
                   </div>
 
                   <Button
-                    onClick={handlePhoneOrder}
-                    variant="outline"
-                    className="w-full border-red-600 text-red-600 hover:bg-red-50 font-medium"
+                    variant="ghost"
                     size="sm"
+                    onClick={() => removeItem(item.id)}
+                    className="text-red-500 hover:text-red-700"
                   >
-                    <Phone className="h-4 w-4 mr-2" />
-                    Call (630) 820-3600
+                    <X className="h-4 w-4" />
                   </Button>
                 </div>
-              </div>
-
-              {/* Remove the entire "Ordering Tips" section */}
-
-              {/* Clear Cart Button */}
-              <div className="mt-6 pt-4 border-t">
-                <Button
-                  onClick={() => {
-                    if (confirm("Are you sure you want to clear your cart?")) {
-                      clearCart()
-                    }
-                  }}
-                  variant="outline"
-                  className="w-full text-gray-600 hover:text-red-600 hover:border-red-600"
-                  size="sm"
-                >
-                  Clear Cart
-                </Button>
-              </div>
-            </>
+              ))}
+            </div>
           )}
         </div>
+
+        {/* Order Status */}
+        {orderStatus && (
+          <div className="p-4 border-t">
+            <div
+              className={`p-3 rounded-lg text-sm ${
+                orderStatus.includes("successfully") ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"
+              }`}
+            >
+              {orderStatus}
+            </div>
+          </div>
+        )}
+
+        {/* Footer - Order Options */}
+        {items.length > 0 && (
+          <div className="p-4 border-t bg-gray-50">
+            {/* Total */}
+            <div className="flex justify-between items-center mb-4">
+              <span className="text-lg font-semibold">Total:</span>
+              <span className="text-xl font-bold text-red-600">${getTotalPrice().toFixed(2)}</span>
+            </div>
+
+            {/* Order Buttons */}
+            <div className="space-y-3">
+              <Button
+                className="w-full bg-green-600 hover:bg-green-700 text-white"
+                onClick={() => handleOrderSubmission("ubereats")}
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? "Processing..." : "Order via UberEats"}
+              </Button>
+
+              <Button
+                className="w-full bg-red-600 hover:bg-red-700 text-white"
+                onClick={() => handleOrderSubmission("doordash")}
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? "Processing..." : "Order via DoorDash"}
+              </Button>
+
+              <Button
+                variant="outline"
+                className="w-full border-red-600 text-red-600 hover:bg-red-50 bg-transparent"
+                onClick={() => handleOrderSubmission("phone")}
+                disabled={isSubmitting}
+              >
+                <Phone className="h-4 w-4 mr-2" />
+                {isSubmitting ? "Processing..." : "Order by Phone"}
+              </Button>
+
+              <Button variant="ghost" className="w-full text-red-600 hover:bg-red-50" onClick={handlePhoneCall}>
+                <Phone className="h-4 w-4 mr-2" />
+                Call (630) 820-3600
+              </Button>
+            </div>
+
+            <p className="text-xs text-gray-500 text-center mt-3">
+              Orders are tracked for analytics and customer service
+            </p>
+          </div>
+        )}
       </div>
-    </div>
+    </>
   )
 }
