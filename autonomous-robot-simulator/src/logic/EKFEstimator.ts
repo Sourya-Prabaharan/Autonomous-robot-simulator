@@ -115,7 +115,7 @@ export class EKFEstimator {
 
     // Matrix utility methods (hardcoded for 3x3 for speed/simplicity)
     private multiplyMatrices(A: Matrix3x3, B: Matrix3x3): Matrix3x3 {
-        let result = [[0, 0, 0], [0, 0, 0], [0, 0, 0]];
+        const result = [[0, 0, 0], [0, 0, 0], [0, 0, 0]];
         for (let i = 0; i < 3; i++) {
             for (let j = 0; j < 3; j++) {
                 for (let k = 0; k < 3; k++) {
