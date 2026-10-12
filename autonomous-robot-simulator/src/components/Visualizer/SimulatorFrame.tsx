@@ -1,4 +1,5 @@
 import React from 'react';
+import type { ThreeEvent } from '@react-three/fiber';
 import { Canvas } from '@react-three/fiber';
 import { OrbitControls, Grid, Environment, ContactShadows } from '@react-three/drei';
 import * as THREE from 'three';
@@ -109,7 +110,7 @@ const SimulatorFrame: React.FC<SimulatorFrameProps> = ({
     map, robotState, setRobotState, estimatedState, setEstimatedState,
     goal, path, onSetGoal, onToggleObstacle, isSimulating, setIsSimulating, noiseLevel, ekf
 }) => {
-    const handlePlaneClick = (e: any) => {
+    const handlePlaneClick = (e: ThreeEvent<MouseEvent>) => {
         const { x, z } = e.point;
         if (e.shiftKey) {
             onToggleObstacle(x + 10, z + 10);
